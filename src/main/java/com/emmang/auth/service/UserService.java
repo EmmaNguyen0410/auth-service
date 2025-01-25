@@ -1,14 +1,20 @@
 package com.emmang.auth.service;
 
+import com.emmang.auth.constant.ExceptionMessage;
 import com.emmang.auth.dto.SignInRequest;
 import com.emmang.auth.dto.SignInResponse;
 import com.emmang.auth.dto.SignUpRequest;
 import com.emmang.auth.entity.User;
+import com.emmang.auth.entity.UserDetailsImpl;
 import com.emmang.auth.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -44,16 +50,21 @@ public class UserService {
                         password
                 )
         );
-        // TODO throw not found user
-        User authenticatedUser = userRespository.findByUsername(username).get();
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+        Optional<User> authenticatedUserOptional = userRespository.findByUsername(username);
 
-        SignInResponse signInResponse = new SignInResponse();
+        if (authenticatedUserOptional.isPresent()) {
+            User authenticatedUser = authenticatedUserOptional.get();
+            String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        signInResponse.setToken(jwtToken);
-        signInResponse.setExpiresIn(jwtService.getJwtExpirationTime());
+            SignInResponse signInResponse = new SignInResponse();
 
-        return signInResponse;
+            signInResponse.setToken(jwtToken);
+            signInResponse.setExpiresIn(jwtService.getJwtExpirationTime());
+
+            return signInResponse;
+        } else {
+            throw new UsernameNotFoundException(ExceptionMessage.USER_NOT_FOUND);
+        }
     }
 }

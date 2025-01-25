@@ -1,5 +1,6 @@
 package com.emmang.auth.config;
 
+import com.emmang.auth.constant.ExceptionMessage;
 import com.emmang.auth.entity.User;
 import com.emmang.auth.entity.UserDetailsImpl;
 import com.emmang.auth.repository.UserRepository;
@@ -31,7 +32,7 @@ public class AuthenticationConfiguration {
                 User user = userOptional.get();
                 return new UserDetailsImpl(user);
             } else {
-                throw new UsernameNotFoundException("User not found");
+                throw new UsernameNotFoundException(ExceptionMessage.USER_NOT_FOUND);
             }
         };
     }
